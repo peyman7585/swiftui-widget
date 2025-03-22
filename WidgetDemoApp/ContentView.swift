@@ -6,10 +6,10 @@
 //
 
 import SwiftUI
-
+import WidgetKit
 struct ContentView: View {
     
-    @AppStorage("streak")   var  streak = 0
+    @AppStorage("streak" , store: UserDefaults(suiteName: "group.com.widgetDemo"))   var  streak = 0
     var body: some View {
         ZStack{
             Color(.black)
@@ -20,8 +20,9 @@ struct ContentView: View {
                     Circle()
                         .stroke(.white.opacity(0.1), lineWidth: 20)
                         
+                    let pct = Double(streak)/50.0
                     Circle()
-                        .trim(from: 0,to: 0.34)
+                        .trim(from: 0,to: pct)
                         .stroke(.blue, style: StrokeStyle(lineWidth: 20, lineCap: .round, lineJoin: .round ))
                         .rotationEffect(.init(degrees: -90))
                         
@@ -40,6 +41,8 @@ struct ContentView: View {
                 Button{
                     streak += 1
                 
+                    WidgetCenter.shared.reloadTimelines(ofKind: "WidgetExtention")
+                    
                 }label: {
                     ZStack{
                         RoundedRectangle(cornerRadius: 20)

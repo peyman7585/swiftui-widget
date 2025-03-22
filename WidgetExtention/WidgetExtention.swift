@@ -9,12 +9,15 @@ import WidgetKit
 import SwiftUI
 
 struct Provider: TimelineProvider {
+    
+    let data = DataService()
+    
     func placeholder(in context: Context) -> SimpleEntry {
-        SimpleEntry(date: Date(), emoji: "😀")
+        SimpleEntry(date: Date(), streak: data.progress())
     }
 
     func getSnapshot(in context: Context, completion: @escaping (SimpleEntry) -> ()) {
-        let entry = SimpleEntry(date: Date(), emoji: "😀")
+        let entry = SimpleEntry(date: Date(), streak: data.progress())
         completion(entry)
     }
 
@@ -25,7 +28,7 @@ struct Provider: TimelineProvider {
         let currentDate = Date()
         for hourOffset in 0 ..< 5 {
             let entryDate = Calendar.current.date(byAdding: .hour, value: hourOffset, to: currentDate)!
-            let entry = SimpleEntry(date: entryDate, emoji: "😀")
+            let entry = SimpleEntry(date: entryDate, streak: data.progress())
             entries.append(entry)
         }
 
@@ -40,20 +43,43 @@ struct Provider: TimelineProvider {
 
 struct SimpleEntry: TimelineEntry {
     let date: Date
-    let emoji: String
+    let streak: Int
 }
 
 struct WidgetExtentionEntryView : View {
     var entry: Provider.Entry
-
+    let data = DataService()
     var body: some View {
-        VStack {
-            Text("Time:")
-            Text(entry.date, style: .time)
-
-            Text("Emoji:")
-            Text(entry.emoji)
-        }
+      
+            ZStack{
+              
+                    Circle()
+                        .stroke(.white.opacity(0.1), lineWidth: 20)
+                        
+                    let pct = Double(data.progress())/50.0
+                    Circle()
+                        .trim(from: 0,to: pct)
+                        .stroke(.blue, style: StrokeStyle(lineWidth: 20, lineCap: .round, lineJoin: .round ))
+                        .rotationEffect(.init(degrees: -90))
+                        
+                    VStack{
+                       
+                        Text(String(data.progress()))
+                            .font(.title)
+                            .bold()
+                    }
+                    .foregroundStyle(.white)
+                    .fontDesign(.rounded)
+                    
+                }
+            .containerBackground(.black, for: .widget)
+            .padding()
+            
+           
+            
+     
+        
+        
     }
 }
 
@@ -73,12 +99,13 @@ struct WidgetExtention: Widget {
         }
         .configurationDisplayName("My Widget")
         .description("This is an example widget.")
+        .supportedFamilies([.systemSmall])
     }
 }
 
 #Preview(as: .systemSmall) {
     WidgetExtention()
 } timeline: {
-    SimpleEntry(date: .now, emoji: "😀")
-    SimpleEntry(date: .now, emoji: "🤩")
+    SimpleEntry(date: .now, streak: 1)
+    SimpleEntry(date: .now, streak: 2)
 }
